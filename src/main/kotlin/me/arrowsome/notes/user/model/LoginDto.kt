@@ -1,4 +1,4 @@
-package me.arrowsome.notes.user.dto
+package me.arrowsome.notes.user.model
 
 data class LoginDto(
     val email: String,

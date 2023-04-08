@@ -42,5 +42,7 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
 
     testImplementation "io.mockk:mockk:${mockkVersion}"
+
+    implementation 'com.auth0:java-jwt:4.4.0'
 }
 

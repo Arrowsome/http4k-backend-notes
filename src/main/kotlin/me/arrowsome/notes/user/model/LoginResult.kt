@@ -1,8 +1,7 @@
-package me.arrowsome.notes.user.sealed
-
-import me.arrowsome.notes.user.dto.TokenDto
+package me.arrowsome.notes.user.model
 
 sealed interface LoginResult {
     data class LoggedIn(val token: TokenDto) : LoginResult
     object InvalidCredentials : LoginResult
+    object NotFound : LoginResult
 }

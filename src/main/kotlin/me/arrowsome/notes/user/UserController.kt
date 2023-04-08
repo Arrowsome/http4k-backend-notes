@@ -1,7 +1,7 @@
 package me.arrowsome.notes.user
 
-import me.arrowsome.notes.user.sealed.LoginResult
-import me.arrowsome.notes.user.sealed.RegisterResult
+import me.arrowsome.notes.user.model.LoginResult
+import me.arrowsome.notes.user.model.RegisterResult
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.BAD_REQUEST
@@ -24,6 +24,7 @@ class UserController(
             is LoginResult.LoggedIn -> Response(OK)
                 .with(userLenses.tokenLens of result.token)
             LoginResult.InvalidCredentials -> Response(UNAUTHORIZED)
+            LoginResult.NotFound -> TODO()
         }
     }
 
@@ -34,8 +35,8 @@ class UserController(
 
         return when (registerResult) {
             is RegisterResult.Registered -> Response(CREATED)
-                .with(userLenses.tokenLens of registerResult.token)
             is RegisterResult.InvalidProfile -> Response(BAD_REQUEST)
+            RegisterResult.DuplicateProfile -> TODO()
         }
     }
 

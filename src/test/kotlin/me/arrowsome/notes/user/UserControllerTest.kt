@@ -4,11 +4,11 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
-import me.arrowsome.notes.user.dto.LoginDto
-import me.arrowsome.notes.user.dto.RegisterDto
-import me.arrowsome.notes.user.dto.TokenDto
-import me.arrowsome.notes.user.sealed.LoginResult
-import me.arrowsome.notes.user.sealed.RegisterResult
+import me.arrowsome.notes.user.model.LoginDto
+import me.arrowsome.notes.user.model.RegisterDto
+import me.arrowsome.notes.user.model.TokenDto
+import me.arrowsome.notes.user.model.LoginResult
+import me.arrowsome.notes.user.model.RegisterResult
 import org.http4k.core.Method.POST
 import org.http4k.core.Request
 import org.http4k.core.Status.Companion.BAD_REQUEST
@@ -65,7 +65,7 @@ class UserControllerTest {
     @Test
     fun `user is registered with success`() {
         // given
-        every { userService.registerUser(REGISTER) } returns RegisterResult.Registered(TOKEN)
+        every { userService.registerUser(REGISTER) } returns RegisterResult.Registered
         val request = Request(POST, "/api/users")
             .with(userLenses.registerLens of REGISTER)
         // when
@@ -73,13 +73,12 @@ class UserControllerTest {
         // then
         verify { userService.registerUser(REGISTER) }
         assertEquals(response.status, CREATED)
-        assertEquals(TOKEN, userLenses.tokenLens.extract(response))
     }
 
     @Test
     fun `user is not registered using invalid data`() {
         // given
-        every { userService.registerUser(REGISTER) } returns RegisterResult.InvalidProfile()
+        every { userService.registerUser(REGISTER) } returns RegisterResult.InvalidProfile
         val request = Request(POST, "/api/users")
             .with(userLenses.registerLens of REGISTER)
         // when
