@@ -18,9 +18,9 @@ class UserService(
             var (email, password) = login
             password = cryptoUtil.hash(password)
 
-            val user = userRepository.findByCredentials(email, password)
+            val user = userRepository.findUserByCredentials(email, password)
 
-            val token = jwtUtil.generateToken(user.id)
+            val token = jwtUtil.generateToken(user.id.toString())
 
             LoginResult.LoggedIn(TokenDto(token))
         } catch (exc: UserNotFoundException) {
@@ -37,7 +37,10 @@ class UserService(
             validatorUtil.checkPassword(password)
             password = cryptoUtil.hash(password)
 
-            userRepository.createWithProfile(email, password)
+            userRepository.createUserWithProfile(UserEntity(
+                email = email,
+                password = password,
+            ))
 
             RegisterResult.Registered
         } catch (exc: UserExistsException) {

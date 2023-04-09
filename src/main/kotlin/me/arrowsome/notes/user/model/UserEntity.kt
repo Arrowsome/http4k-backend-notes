@@ -1,6 +1,11 @@
 package me.arrowsome.notes.user.model
 
+import org.bson.codecs.pojo.annotations.BsonId
+import org.litote.kmongo.Id
+
 data class UserEntity(
-    val id: String,
+    @BsonId
+    val id: Id<UserEntity>? = null,
     val email: String,
+    val password: String? = null,
 )

@@ -4,6 +4,9 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
+import me.arrowsome.notes.user.UserController
+import me.arrowsome.notes.user.UserLenses
+import me.arrowsome.notes.user.UserService
 import me.arrowsome.notes.user.model.LoginDto
 import me.arrowsome.notes.user.model.RegisterDto
 import me.arrowsome.notes.user.model.TokenDto
@@ -40,13 +43,13 @@ class UserControllerTest {
         // given
         every { userService.loginUser(LOGIN) } returns LoginResult.LoggedIn(TOKEN)
         val request = Request(POST, "/api/users/login")
-            .with(userLenses.loginLens of LOGIN)
+            .with(UserLenses.loginLens of LOGIN)
         // when
         val response = userController.loginUser(request)
         // then
         verify { userService.loginUser(LOGIN) }
         assertEquals(response.status, OK)
-        assertEquals(TOKEN, userLenses.tokenLens.extract(response))
+        assertEquals(TOKEN, UserLenses.tokenLens.extract(response))
     }
 
     @Test
@@ -54,7 +57,7 @@ class UserControllerTest {
         // given
         every { userService.loginUser(LOGIN) } returns LoginResult.InvalidCredentials
         val request = Request(POST, "/api/users/login")
-            .with(userLenses.loginLens of LOGIN)
+            .with(UserLenses.loginLens of LOGIN)
         // when
         val response = userController.loginUser(request)
         // then
@@ -67,7 +70,7 @@ class UserControllerTest {
         // given
         every { userService.registerUser(REGISTER) } returns RegisterResult.Registered
         val request = Request(POST, "/api/users")
-            .with(userLenses.registerLens of REGISTER)
+            .with(UserLenses.registerLens of REGISTER)
         // when
         val response = userController.registerUser(request)
         // then
@@ -80,7 +83,7 @@ class UserControllerTest {
         // given
         every { userService.registerUser(REGISTER) } returns RegisterResult.InvalidProfile
         val request = Request(POST, "/api/users")
-            .with(userLenses.registerLens of REGISTER)
+            .with(UserLenses.registerLens of REGISTER)
         // when
         val response = userController.registerUser(request)
         // then

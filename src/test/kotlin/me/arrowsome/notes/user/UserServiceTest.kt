@@ -3,6 +3,8 @@ package me.arrowsome.notes.user
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import me.arrowsome.notes.user.UserRepository
+import me.arrowsome.notes.user.UserService
 import me.arrowsome.notes.user.util.JwtUtil
 import me.arrowsome.notes.user.util.CryptoUtil
 import me.arrowsome.notes.user.util.ValidationException
@@ -11,6 +13,7 @@ import me.arrowsome.notes.user.model.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.litote.kmongo.newId
 
 class UserServiceTest {
     private lateinit var userService: UserService
@@ -31,12 +34,12 @@ class UserServiceTest {
     @Test
     fun `login user with provided credentials`() {
         // given
-        every { userRepository.findByCredentials(any(), any()) } returns USER_ENTITY
+        every { userRepository.findUserByCredentials(any(), any()) } returns USER_ENTITY
         every { jwtUtil.generateToken(any()) } returns TOKEN
         // when
         val result = userService.loginUser(LOGIN_DTO)
         //
-        verify { userRepository.findByCredentials(any(), any()) }
+        verify { userRepository.findUserByCredentials(any(), any()) }
         verify { jwtUtil.generateToken(any()) }
         verify { cryptoUtil.hash(any()) }
         assertTrue(result is LoginResult.LoggedIn)
@@ -46,47 +49,47 @@ class UserServiceTest {
     @Test
     fun `login fails with non-existing identity`() {
         // given
-        every { userRepository.findByCredentials(any(), any()) } throws UserNotFoundException()
+        every { userRepository.findUserByCredentials(any(), any()) } throws UserNotFoundException()
         // when
         val result = userService.loginUser(LOGIN_DTO)
         // then
         verify { cryptoUtil.hash(any()) }
-        verify { userRepository.findByCredentials(any(), any()) }
+        verify { userRepository.findUserByCredentials(any(), any()) }
         assertEquals(LoginResult.NotFound, result)
     }
 
     @Test
     fun `login fails with invalid credentials`() {
         // given
-        every { userRepository.findByCredentials(any(), any()) } throws UserCredentialsException()
+        every { userRepository.findUserByCredentials(any(), any()) } throws UserCredentialsException()
         // when
         val result = userService.loginUser(LOGIN_DTO)
         // then
         verify { cryptoUtil.hash(any()) }
-        verify { userRepository.findByCredentials(any(), any()) }
+        verify { userRepository.findUserByCredentials(any(), any()) }
         assertEquals(LoginResult.InvalidCredentials, result)
     }
 
     @Test
     fun `user is registered with valid data`() {
         // given
-        every { userRepository.createWithProfile(any(), any()) } returns USER_ENTITY
+        every { userRepository.createUserWithProfile(any()) } returns Unit
         // when
         val result = userService.registerUser(REGISTER_DTO)
         // then
         verify { cryptoUtil.hash(any()) }
-        verify { userRepository.createWithProfile(any(), any()) }
+        verify { userRepository.createUserWithProfile(any()) }
         assertEquals(RegisterResult.Registered, result)
     }
 
     @Test
     fun `duplicate user is not registered`() {
         // given
-        every { userRepository.createWithProfile(any(), any()) } throws UserExistsException()
+        every { userRepository.createUserWithProfile(any()) } throws UserExistsException()
         // when
         val result = userService.registerUser(REGISTER_DTO)
         // then
-        verify { userRepository.createWithProfile(any(), any()) }
+        verify { userRepository.createUserWithProfile(any()) }
         assertEquals(RegisterResult.DuplicateProfile, result)
     }
 
@@ -115,8 +118,9 @@ class UserServiceTest {
         private const val TOKEN = "some.jwt.token"
 
         private val USER_ENTITY = UserEntity(
-            id = "some#random#string",
+            id = newId(),
             email = EMAIL,
+            password = null,
         )
 
         private val LOGIN_DTO = LoginDto(

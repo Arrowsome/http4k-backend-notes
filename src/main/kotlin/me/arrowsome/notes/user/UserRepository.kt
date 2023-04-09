@@ -1,11 +1,30 @@
 package me.arrowsome.notes.user
 
+import com.mongodb.client.MongoCollection
 import me.arrowsome.notes.user.model.UserEntity
+import me.arrowsome.notes.user.model.UserNotFoundException
+import org.litote.kmongo.and
+import org.litote.kmongo.eq
+import org.litote.kmongo.findOne
 
-class UserRepository {
+class UserRepository(
+    private val userCollection: MongoCollection<UserEntity>,
+) {
 
-    fun findByCredentials(email: String, password: String): UserEntity = TODO()
+    fun findUserByCredentials(email: String, password: String): UserEntity {
+        return userCollection.findOne(
+            and(
+                UserEntity::email eq email,
+                UserEntity::password eq password,
+            ),
+        ) ?: throw UserNotFoundException()
+    }
 
-    fun createWithProfile(email: String, password: String) : UserEntity = TODO()
+    fun createUserWithProfile(user: UserEntity) {
+        userCollection.insertOne(user).let { result ->
+            if (!result.wasAcknowledged())
+                throw Exception()
+        }
+    }
 
 }
