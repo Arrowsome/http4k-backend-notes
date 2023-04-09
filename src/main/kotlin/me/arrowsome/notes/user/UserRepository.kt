@@ -5,19 +5,23 @@ import me.arrowsome.notes.user.model.UserEntity
 import me.arrowsome.notes.user.model.UserNotFoundException
 import org.litote.kmongo.and
 import org.litote.kmongo.eq
-import org.litote.kmongo.findOne
+import org.litote.kmongo.include
+import org.litote.kmongo.projection
 
 class UserRepository(
     private val userCollection: MongoCollection<UserEntity>,
 ) {
 
     fun findUserByCredentials(email: String, password: String): UserEntity {
-        return userCollection.findOne(
+        return userCollection.find(
             and(
                 UserEntity::email eq email,
                 UserEntity::password eq password,
             ),
-        ) ?: throw UserNotFoundException()
+        )
+            .projection(include(UserEntity::email))
+            .limit(1)
+            .firstOrNull() ?: throw UserNotFoundException()
     }
 
     fun createUserWithProfile(user: UserEntity) {
