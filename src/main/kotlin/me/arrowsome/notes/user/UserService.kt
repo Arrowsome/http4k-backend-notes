@@ -32,9 +32,9 @@ class UserService(
     fun registerUser(register: RegisterDto): RegisterResult {
         return try {
             var (email, password) = register
-            if (validatorUtil.checkEmail(email))
+            if (validatorUtil.isEmailValid(email))
                 throw ValidationException()
-            if (validatorUtil.checkPassword(password))
+            if (validatorUtil.isPasswordValid(password))
                 throw ValidationException()
             password = cryptoUtil.hashBcrypt(password)
 

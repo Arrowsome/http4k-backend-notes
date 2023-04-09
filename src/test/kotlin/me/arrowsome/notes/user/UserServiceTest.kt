@@ -95,18 +95,18 @@ class UserServiceTest {
     @Test
     fun `users with invalid email is not registered`() {
         // given
-        every { validatorUtil.checkEmail(any()) } throws ValidationException()
+        every { validatorUtil.isEmailValid(any()) } throws ValidationException()
         // when
         val result = userService.registerUser(REGISTER_DTO)
         // then
-        verify { validatorUtil.checkEmail(any()) }
+        verify { validatorUtil.isEmailValid(any()) }
         assertEquals(RegisterResult.InvalidProfile, result)
     }
 
     @Test
     fun `users with invalid password is not registered`() {
         // given
-        every { validatorUtil.checkPassword(any()) } throws ValidationException()
+        every { validatorUtil.isPasswordValid(any()) } throws ValidationException()
         // when
         val result = userService.registerUser(REGISTER_DTO)
         // then
