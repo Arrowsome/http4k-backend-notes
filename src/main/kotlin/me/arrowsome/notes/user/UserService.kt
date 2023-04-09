@@ -2,7 +2,6 @@ package me.arrowsome.notes.user
 
 import me.arrowsome.notes.user.util.JwtUtil
 import me.arrowsome.notes.user.util.CryptoUtil
-import me.arrowsome.notes.user.util.ValidationException
 import me.arrowsome.notes.user.util.ValidatorUtil
 import me.arrowsome.notes.user.model.*
 
@@ -16,7 +15,7 @@ class UserService(
     fun loginUser(login: LoginDto): LoginResult {
         return try {
             var (email, password) = login
-            password = cryptoUtil.hash(password)
+            password = cryptoUtil.hashBcrypt(password)
 
             val user = userRepository.findUserByCredentials(email, password)
 
@@ -33,9 +32,14 @@ class UserService(
     fun registerUser(register: RegisterDto): RegisterResult {
         return try {
             var (email, password) = register
-            validatorUtil.checkEmail(email)
-            validatorUtil.checkPassword(password)
-            password = cryptoUtil.hash(password)
+            if (validatorUtil.checkEmail(email))
+                throw ValidationException()
+            if (validatorUtil.checkPassword(password))
+                throw ValidationException()
+            password = cryptoUtil.hashBcrypt(password)
+
+            if (userRepository.anyUserWithEmail(email))
+                throw UserExistsException()
 
             userRepository.createUserWithProfile(UserEntity(
                 email = email,
@@ -51,3 +55,5 @@ class UserService(
     }
 
 }
+
+class ValidationException : Exception()

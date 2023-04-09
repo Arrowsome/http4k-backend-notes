@@ -8,4 +8,3 @@ object ValidatorUtil {
 
 }
 
-class ValidationException : Exception()

@@ -31,23 +31,24 @@ class UserRepositoryTest {
     @Test
     fun `find and return user by credential from datasource`() {
         // given
-        every { userCollection.findOne(any<Bson>()) } returns USER_ENTITY
+        every { userCollection.find(any<Bson>()).projection(any<Bson>()).limit(1).firstOrNull() } returns USER_ENTITY
         // when
         val entity = userRepository.findUserByCredentials(EMAIL, PASSWORD)
         // then
+        verify { userCollection.find(any<Bson>()).projection(any<Bson>()).limit(1).firstOrNull() }
         assertEquals(USER_ENTITY, entity)
     }
 
     @Test
     fun `not finding a user results in exception`() {
         // given
-        every { userCollection.findOne(any<Bson>()) } returns null
+        every { userCollection.find(any<Bson>()).projection(any<Bson>()).limit(1).firstOrNull() } returns null
         // when
         val exception = assertThrows<UserNotFoundException> {
-            val entity = userRepository.findUserByCredentials(EMAIL, PASSWORD)
+            userRepository.findUserByCredentials(EMAIL, PASSWORD)
         }
         // then
-        verify { userCollection.findOne(any<Bson>()) }
+        verify { userCollection.find(any<Bson>()).projection(any<Bson>()).limit(1).firstOrNull() }
         assertNotNull(exception)
     }
 

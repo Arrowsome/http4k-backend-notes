@@ -31,4 +31,6 @@ class UserRepository(
         }
     }
 
+    fun anyUserWithEmail(email: String): Boolean = TODO()
+
 }

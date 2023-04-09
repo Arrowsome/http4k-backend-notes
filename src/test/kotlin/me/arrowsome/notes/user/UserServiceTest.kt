@@ -3,11 +3,8 @@ package me.arrowsome.notes.user
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import me.arrowsome.notes.user.UserRepository
-import me.arrowsome.notes.user.UserService
 import me.arrowsome.notes.user.util.JwtUtil
 import me.arrowsome.notes.user.util.CryptoUtil
-import me.arrowsome.notes.user.util.ValidationException
 import me.arrowsome.notes.user.util.ValidatorUtil
 import me.arrowsome.notes.user.model.*
 import org.junit.jupiter.api.Assertions.*
@@ -38,10 +35,10 @@ class UserServiceTest {
         every { jwtUtil.generateToken(any()) } returns TOKEN
         // when
         val result = userService.loginUser(LOGIN_DTO)
-        //
+        // then
         verify { userRepository.findUserByCredentials(any(), any()) }
         verify { jwtUtil.generateToken(any()) }
-        verify { cryptoUtil.hash(any()) }
+        verify { cryptoUtil.hashBcrypt(any()) }
         assertTrue(result is LoginResult.LoggedIn)
         assertEquals(TOKEN_DTO, (result as LoginResult.LoggedIn).token)
     }
@@ -53,7 +50,7 @@ class UserServiceTest {
         // when
         val result = userService.loginUser(LOGIN_DTO)
         // then
-        verify { cryptoUtil.hash(any()) }
+        verify { cryptoUtil.hashBcrypt(any()) }
         verify { userRepository.findUserByCredentials(any(), any()) }
         assertEquals(LoginResult.NotFound, result)
     }
@@ -65,7 +62,7 @@ class UserServiceTest {
         // when
         val result = userService.loginUser(LOGIN_DTO)
         // then
-        verify { cryptoUtil.hash(any()) }
+        verify { cryptoUtil.hashBcrypt(any()) }
         verify { userRepository.findUserByCredentials(any(), any()) }
         assertEquals(LoginResult.InvalidCredentials, result)
     }
@@ -73,11 +70,13 @@ class UserServiceTest {
     @Test
     fun `user is registered with valid data`() {
         // given
+        every { userRepository.anyUserWithEmail(any()) } returns false
         every { userRepository.createUserWithProfile(any()) } returns Unit
         // when
         val result = userService.registerUser(REGISTER_DTO)
         // then
-        verify { cryptoUtil.hash(any()) }
+        verify { userRepository.anyUserWithEmail(any()) }
+        verify { cryptoUtil.hashBcrypt(any()) }
         verify { userRepository.createUserWithProfile(any()) }
         assertEquals(RegisterResult.Registered, result)
     }
@@ -85,11 +84,11 @@ class UserServiceTest {
     @Test
     fun `duplicate user is not registered`() {
         // given
-        every { userRepository.createUserWithProfile(any()) } throws UserExistsException()
+        every { userRepository.anyUserWithEmail(any()) } returns true
         // when
         val result = userService.registerUser(REGISTER_DTO)
         // then
-        verify { userRepository.createUserWithProfile(any()) }
+        verify { userRepository.anyUserWithEmail(any()) }
         assertEquals(RegisterResult.DuplicateProfile, result)
     }
 
@@ -100,6 +99,7 @@ class UserServiceTest {
         // when
         val result = userService.registerUser(REGISTER_DTO)
         // then
+        verify { validatorUtil.checkEmail(any()) }
         assertEquals(RegisterResult.InvalidProfile, result)
     }
 
